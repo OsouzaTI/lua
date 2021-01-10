@@ -1,6 +1,6 @@
 local draw_utils = require "draw-utils"
 local size_screen = require "conf"
-
+local transformations = require "transformations"
 local Module = {}
 
 function Module.fill_square(x, y, size, tbRGBA)
@@ -12,7 +12,7 @@ function Module.fill_square(x, y, size, tbRGBA)
             draw_utils.draw_point(x, y, tbRGBA)
         end
     end
-    
+
 end
 
 function Module.square(x, y, size, border, tbRGBA)
@@ -85,7 +85,7 @@ function Module.triangle(x1, y1, x2, y2, x3, y3, tbRGBA)
             -- caso o sinal do ponto Q em relação a todos os segmentos de
             -- retas sejam iguais, o pixel sera pintado com a cor escolhida
             if sign(prod1) == sign(prod2) and sign(prod2) == sign(prod3) then
-                --print("Pinta o pixel")
+                --print("Pinta o pixel")                           
                 draw_utils.draw_point(xx, yy, tbRGBA)                
             end
 

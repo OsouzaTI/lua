@@ -8,6 +8,6 @@ end
 
 function love.draw() 
   
-  draw.Polygons.triangle(0, 0, 100, 100, 200, 0, colors.green)
+  draw.Polygons.triangle(50, 50, 100, 50, 75, 150, colors.green)
 
 end
