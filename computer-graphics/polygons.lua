@@ -1,15 +1,25 @@
 local draw_utils = require "draw-utils"
-local size_screen = require "conf"
 local transformations = require "transformations"
+local vec2D = require "vector2D"
+local vec3D = require "vector3D"
+local matrix = require "matrix"
+local colors = require "colors"
 local Module = {}
+DTangulo = 0
+
+local function change_DTangle()
+    if DTangulo < 360 then
+        DTangulo = DTangulo + 1
+    else DTangulo = 0 end
+end
 
 function Module.fill_square(x, y, size, tbRGBA)
     local finalX = x + size
     local finalY = y + size
 
-    for x = x, finalX, 1 do
-        for y = y, finalY, 1 do
-            draw_utils.draw_point(x, y, tbRGBA)
+    for xx = x, finalX, 1 do
+        for yy = y, finalY, 1 do
+            draw_utils.draw_point(xx, yy, tbRGBA)
         end
     end
 
@@ -88,9 +98,73 @@ function Module.triangle(x1, y1, x2, y2, x3, y3, tbRGBA)
                 --print("Pinta o pixel")                           
                 draw_utils.draw_point(xx, yy, tbRGBA)                
             end
+        end
+    end
+end
+
+function Module.circle(cx, cy, radius, tbRGBA)
+    local center = vec2D.new(cx, cy)
+    -- A tela vai simetricamente de - size/2... ate +size/2
+    -- permitindo assim os quadrantes diagonais
+
+    for x = -HALF_SIZE_SCREEN, HALF_SIZE_SCREEN, 1 do
+        for y = -HALF_SIZE_SCREEN, HALF_SIZE_SCREEN, 1 do
+            
+            -- cria o ponto Q que é representado por 'x' e 'y'
+            local Q = vec2D.new(x, y)
+            -- calcula a distancia do ponto Q para o centro da circunferencia
+            local centerQ = vec2D.distancePoint(Q, center)
+            -- verifica se o valor resultante da distancia é menor que o raio(o ponto está interno),
+            -- ou se o ponto é igual ao raio(o ponto pertence a circunferencia), caso for maior
+            -- o ponto é externo e então ignorado
+            if centerQ <= radius then
+                -- angulo pode ser qualquer um
+                Q = transformations.scale(Q, 1.5, math.cos(angulo))
+                Q = transformations.rotate2D(Q, math.rad(angulo))
+                Q = transformations.translate(Q, size_screen/2, size_screen/2)
+                draw_utils.draw_point(Q.x, Q.y, tbRGBA)
+            end
 
         end
     end
+end
+
+function Module.Mcircle(tbRGBA)
+    change_DTangle()
+    -- matriz que representa o circulo de raio 1
+    local circulo_unitario = matrix.makeMatrix({[0]=1, 0, 0, 0, 1, 0, 0, 0, -1})
+    -- Matrizes de Transformações inversas
+    local scaleMatrix = matrix.makeScaleMatrix(10+math.cos(DTangulo)*2.5, 8+math.sin(DTangulo)*3.5)
+    local translateMatrix = matrix.makeTranslateMatrix(HALF_SIZE_SCREEN, HALF_SIZE_SCREEN)
+    local rotateMatrix = matrix.makeRotateMatrix(math.rad(DTangulo))
+    -- Matrizes transpostas das inversas
+    local TscaleMatrix = matrix.transpose(scaleMatrix)
+    local TtranslateMatrix = matrix.transpose(translateMatrix)
+    local TrotateMatrix = matrix.transpose(rotateMatrix)
+    
+
+    for xx = 0, size_screen, 1 do
+        for yy = 0, size_screen, 1 do
+    
+            -- Ponto P qualquer
+            local P = vec3D.new(xx, yy, 1)
+            local T = {}
+            -- Escalonando
+            T = TscaleMatrix * circulo_unitario * scaleMatrix
+            -- Rotação
+            T = TrotateMatrix * T * rotateMatrix
+            -- Translação 
+            T = TtranslateMatrix * T * translateMatrix
+
+            local R = matrix.multVec3D(T, P)     
+            if R.x^2 + R.y^2 < 1 then
+                --print(R)
+                draw_utils.draw_point(xx, yy, tbRGBA)
+            end
+
+        end
+    end
+
 end
 
 return Module

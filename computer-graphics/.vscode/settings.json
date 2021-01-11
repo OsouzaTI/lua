@@ -1,5 +1,7 @@
 {
     "Lua.diagnostics.globals": [
-        "love"
+        "love",
+        "size_screen",
+        "DTangulo",
     ]
 }
