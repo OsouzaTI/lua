@@ -137,11 +137,6 @@ function Module.Mcircle(tbRGBA)
     local scaleMatrix = matrix.makeScaleMatrix(10+math.cos(DTangulo)*2.5, 8+math.sin(DTangulo)*3.5)
     local translateMatrix = matrix.makeTranslateMatrix(HALF_SIZE_SCREEN, HALF_SIZE_SCREEN)
     local rotateMatrix = matrix.makeRotateMatrix(math.rad(DTangulo))
-    -- Matrizes transpostas das inversas
-    local TscaleMatrix = matrix.transpose(scaleMatrix)
-    local TtranslateMatrix = matrix.transpose(translateMatrix)
-    local TrotateMatrix = matrix.transpose(rotateMatrix)
-    
 
     for xx = 0, size_screen, 1 do
         for yy = 0, size_screen, 1 do
@@ -150,11 +145,11 @@ function Module.Mcircle(tbRGBA)
             local P = vec3D.new(xx, yy, 1)
             local T = {}
             -- Escalonando
-            T = TscaleMatrix * circulo_unitario * scaleMatrix
+            T = matrix.applyTransformation(scaleMatrix, circulo_unitario)
             -- Rotação
-            T = TrotateMatrix * T * rotateMatrix
+            T =  matrix.applyTransformation(rotateMatrix, T)
             -- Translação 
-            T = TtranslateMatrix * T * translateMatrix
+            T =  matrix.applyTransformation(translateMatrix, T)
 
             local R = matrix.multVec3D(T, P)     
             if R.x^2 + R.y^2 < 1 then

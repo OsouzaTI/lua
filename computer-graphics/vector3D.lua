@@ -1,36 +1,39 @@
-local Module = {}
+local vec3 = {}
 
-function Module.new(x, y, z)
-    return setmetatable({x = x, y = y, z = z}, Module)
+function vec3.new(x, y, z)
+    return setmetatable({x = x, y = y, z = z}, vec3)
 end
 
 -- Vectors Operations
 
-function Module.add(u, v)    
-    return Module.new(u.x + v.x, u.y + v.y, u.z + v.z)
+function vec3.add(u, v)    
+    return vec3.new(u.x + v.x, u.y + v.y, u.z + v.z)
 end
 
-function Module.sub(u, v)    
-    return Module.new(u.x - v.x, u.y - v.y, u.z - v.z)
+function vec3.sub(u, v)    
+    return vec3.new(u.x - v.x, u.y - v.y, u.z - v.z)
 end
 
-function Module.mul(u, v)    
-    return Module.new(u.x * v.x, u.y * v.y, u.z * v.z)
+function vec3.mul(u, v)    
+    return vec3.new(u.x * v.x, u.y * v.y, u.z * v.z)
 end
 
-function Module.dot(u, v)    
+function vec3.dot(u, v)    
     return u.x * v.x + u.y * v.y + u.z * v.z
 end
 
-function Module.tos(u)
+function vec3.tos(u)
     return "<"..tostring(u.x)..","..tostring(u.y)..","..tostring(u.z)..">"
 end
 
+function vec3.distancePoint(a, b)
+    return math.sqrt( (b.x - a.x)^2 + (b.y - a.y)^2 + (b.z - a.z)^2)
+end
 
-Module.__add = Module.add
-Module.__sub = Module.add
-Module.__mul = Module.add
-Module.__mod = Module.dot
-Module.__tostring = Module.tos
+vec3.__add = vec3.add
+vec3.__sub = vec3.add
+vec3.__mul = vec3.add
+vec3.__mod = vec3.dot
+vec3.__tostring = vec3.tos
 
-return Module
+return vec3

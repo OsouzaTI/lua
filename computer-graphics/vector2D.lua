@@ -1,39 +1,39 @@
-local Module = {}
+local vec2 = {}
 
-function Module.new(x, y)
-    return setmetatable({x = x, y = y}, Module)
+function vec2.new(x, y)
+    return setmetatable({x = x, y = y}, vec2)
 end
 
 -- Vectors Operations
 
-function Module.add(u, v)    
-    return Module.new(u.x + v.x, u.y + v.y)
+function vec2.add(u, v)    
+    return vec2.new(u.x + v.x, u.y + v.y)
 end
 
-function Module.sub(u, v)    
-    return Module.new(u.x - v.x, u.y - v.y)
+function vec2.sub(u, v)    
+    return vec2.new(u.x - v.x, u.y - v.y)
 end
 
-function Module.mul(u, v)    
-    return Module.new(u.x * v.x, u.y * v.y)
+function vec2.mul(u, v)    
+    return vec2.new(u.x * v.x, u.y * v.y)
 end
 
-function Module.dot(u, v)    
+function vec2.dot(u, v)    
     return u.x * v.x + u.y * v.y
 end
 
-function Module.tos(u)
+function vec2.tos(u)
     return "<"..tostring(u.x)..","..tostring(u.y)..">"
 end
 
-function Module.distancePoint(a, b)
+function vec2.distancePoint(a, b)
     return math.sqrt( (b.x - a.x)^2 + (b.y - a.y)^2 )
 end
 
-Module.__add = Module.add
-Module.__sub = Module.add
-Module.__mul = Module.add
-Module.__mod = Module.dot
-Module.__tostring = Module.tos
+vec2.__add = vec2.add
+vec2.__sub = vec2.add
+vec2.__mul = vec2.add
+vec2.__mod = vec2.dot
+vec2.__tostring = vec2.tos
 
-return Module
+return vec2
