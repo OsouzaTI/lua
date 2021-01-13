@@ -57,6 +57,11 @@ function matrix.makeRotateMatrix(a)
     return matrix.makeMatrix(translate_matrix)
 end
 
+function matrix.makeIdentity()
+    local list = {[0]=1, 0, 0, 0, 1, 0, 0, 0, 1}    
+    return matrix.makeMatrix(list)
+end
+
 function matrix.new()
     local list = {[0]=0, 0, 0, 0, 0, 0, 0, 0, 0}    
     return matrix.makeMatrix(list)

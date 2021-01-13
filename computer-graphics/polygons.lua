@@ -4,7 +4,7 @@ local vec2D = require "vector2D"
 local vec3D = require "vector3D"
 local matrix = require "matrix"
 local colors = require "colors"
-local Module = {}
+local polygons = {}
 DTangulo = 0
 
 local function change_DTangle()
@@ -13,7 +13,7 @@ local function change_DTangle()
     else DTangulo = 0 end
 end
 
-function Module.fill_square(x, y, size, tbRGBA)
+function polygons.fill_square(x, y, size, tbRGBA)
     local finalX = x + size
     local finalY = y + size
 
@@ -25,7 +25,7 @@ function Module.fill_square(x, y, size, tbRGBA)
 
 end
 
-function Module.square(x, y, size, border, tbRGBA)
+function polygons.square(x, y, size, border, tbRGBA)
     local finalX = x + size
     local finalY = y + size
     local initBorderX = x + border
@@ -46,7 +46,17 @@ function Module.square(x, y, size, border, tbRGBA)
     end
 end
 
-function Module.triangle(x1, y1, x2, y2, x3, y3, tbRGBA)  
+function polygons.sign(a)
+    if a < 0 then
+        return -1
+    elseif a > 0 then
+        return 1
+    else return 0 end
+end
+
+function polygons.triangle(x1, y1, x2, y2, x3, y3, tbRGBA)  
+    local sign = polygons.sign
+
     local HALF_PI = 1.57079632679 -- 90 graus
 
     local function rotateVector2D(x, y, angle)
@@ -57,14 +67,6 @@ function Module.triangle(x1, y1, x2, y2, x3, y3, tbRGBA)
     
     local function produtoEscalarVector2D(x1, y1, x2, y2)
         return x1 * x2 + y1 * y2
-    end
-
-    local function sign(a)
-        if a < 0 then
-            return -1
-        elseif a > 0 then
-            return 1
-        else return 0 end
     end
 
     local u = { x = x2 - x1, y = y2 - y1 }
@@ -102,34 +104,7 @@ function Module.triangle(x1, y1, x2, y2, x3, y3, tbRGBA)
     end
 end
 
-function Module.circle(cx, cy, radius, tbRGBA)
-    local center = vec2D.new(cx, cy)
-    -- A tela vai simetricamente de - size/2... ate +size/2
-    -- permitindo assim os quadrantes diagonais
-
-    for x = -HALF_SIZE_SCREEN, HALF_SIZE_SCREEN, 1 do
-        for y = -HALF_SIZE_SCREEN, HALF_SIZE_SCREEN, 1 do
-            
-            -- cria o ponto Q que é representado por 'x' e 'y'
-            local Q = vec2D.new(x, y)
-            -- calcula a distancia do ponto Q para o centro da circunferencia
-            local centerQ = vec2D.distancePoint(Q, center)
-            -- verifica se o valor resultante da distancia é menor que o raio(o ponto está interno),
-            -- ou se o ponto é igual ao raio(o ponto pertence a circunferencia), caso for maior
-            -- o ponto é externo e então ignorado
-            if centerQ <= radius then
-                -- angulo pode ser qualquer um
-                Q = transformations.scale(Q, 1.5, math.cos(angulo))
-                Q = transformations.rotate2D(Q, math.rad(angulo))
-                Q = transformations.translate(Q, size_screen/2, size_screen/2)
-                draw_utils.draw_point(Q.x, Q.y, tbRGBA)
-            end
-
-        end
-    end
-end
-
-function Module.Mcircle(tbRGBA)
+function polygons.circle(tbRGBA)
     change_DTangle()
     -- matriz que representa o circulo de raio 1
     local circulo_unitario = matrix.makeMatrix({[0]=1, 0, 0, 0, 1, 0, 0, 0, -1})
@@ -162,6 +137,154 @@ function Module.Mcircle(tbRGBA)
 
 end
 
-return Module
+--[[
+    Implementação dos polígonos utilizando a linha implicita
+]] --
+
+function polygons.implicitLine(x1, y1, x2, y2)
+    local a = y2 - y1
+    local b = x1 - x2
+    local c = -(a * x1 + b * y1)
+    local s = polygons.sign(a)
+    
+    local function sortY(t)
+        local _t = {
+            ymin = nil,
+            ymax = nil
+        }
+        if t[0] > t[1] then
+            local temp = t[0]
+            _t["ymin"] = t[1]
+            _t["ymax"] = temp
+        else 
+            _t["ymin"] = t[0]
+            _t["ymax"] = t[1]            
+        end
+        return _t
+    end
+
+    return {
+        [0] = sortY({[0]= y1, y2}),
+        {
+            ["a"] = s * a,
+            ["b"] = s * b,
+            ["c"] = s * c,
+            ["s"] = s
+        }
+    }
+end
+
+function polygons.implicitLinewIndingNumber(l, x, y)
+    local condicion = y > l[0]["ymin"] and y <= l[0]["ymax"] and (l[1]["a"] * x + l[1]["b"] * y + l[1]["c"]) < 0
+    if condicion then    
+        return l[1]["s"]
+    end
+    return 0
+end
+
+function polygons.implicitTriangle(x1, y1, x2, y2, x3, y3)
+    
+    local implicitLineAB = polygons.implicitLine(x1, y1, x2, y2)
+    local implicitLineBC = polygons.implicitLine(x2, y2, x3, y3)
+    local implicitLineCA = polygons.implicitLine(x3, y3, x1, y1)
+
+    return {
+        [0] = implicitLineAB,
+        implicitLineBC,
+        implicitLineCA
+    }
+
+end
+
+function polygons.implicitTriangleWindingNumber(implicitTriangle, x, y)
+    local sum = 0
+    for i = 0, 2, 1 do
+        sum = sum + polygons.implicitLinewIndingNumber(implicitTriangle[i], x, y)        
+    end
+    return sum
+end
+
+function polygons.dImplicitTriangle(x1, y1, x2, y2, x3, y3)
+    local implicitTriangleLines = polygons.implicitTriangle(x1, y1, x2, y2, x3, y3)
+    for xx = 0, size_screen, 1 do
+        for yy = 0, size_screen, 1 do
+            local sumImplicitTriangleWindingNumber = polygons.implicitTriangleWindingNumber(implicitTriangleLines, xx, yy)            
+            if sumImplicitTriangleWindingNumber ~= 0 then
+                draw_utils.draw_point(xx, yy, colors.green)
+            end
+        end
+    end
+end
+
+function polygons.dImplicitLine(x1, y1, x2, y2, x3, y3)
+    local implicitLine = polygons.implicitLine(x1, y1, x2, y2)
+    for xx = 0, size_screen, 1 do
+        for yy = 0, size_screen, 1 do
+            local sumImplicitLine = polygons.implicitLinewIndingNumber(implicitLine, xx, yy)
+            if sumImplicitLine ~= 0 then
+                draw_utils.draw_point(xx, yy, colors.green)
+            end
+        end
+    end
+end
+
+function polygons.implicitPolygon(edgeList)
+    local implicitPolygonLines = {}
+    local k = 100
+    local x = 2
+    local e = edgeList
+    -- {
+    --     [0] =   {[0] = (0.587785 +x) * k, (-0.809017 + x) * k },
+    --             {[0] = (-0.951057+x) * k, (0.309017  + x)* k  },
+    --             {[0] = (0.951057 +x) * k, ( 0.309017 + x) * k },
+    --             {[0] = (-0.587785+x) * k, (-0.809017 + x) * k },
+    --             {[0] = (0        +x) * k   , (1 +x) * k}
+    -- }
+
+    -- implicitPolygonLines[0] = polygons.implicitLine(e[0][0], e[0][1], e[1][0], e[1][1])
+    -- implicitPolygonLines[1] = polygons.implicitLine(e[1][0], e[1][1], e[2][0], e[2][1])    
+    -- implicitPolygonLines[2] = polygons.implicitLine(e[2][0], e[2][1], e[3][0], e[3][1])
+    -- implicitPolygonLines[3] = polygons.implicitLine(e[3][0], e[3][1], e[4][0], e[4][1])
+    -- implicitPolygonLines[4] = polygons.implicitLine(e[4][0], e[4][1], e[0][0], e[0][1])
+
+    for i = 0, #e, 1 do
+        if i < #e then
+            implicitPolygonLines[i] = polygons.implicitLine(e[i][0], e[i][1], e[i+1][0], e[i+1][1])
+        else            
+            implicitPolygonLines[i] = polygons.implicitLine(e[i][0], e[i][1], e[0][0], e[0][1])
+        end
+    end
+
+    for key, value in pairs(implicitPolygonLines) do
+        print(value[0]["ymin"], value[0]["ymax"], value[1]["b"])
+    end
+    
+    return implicitPolygonLines
+end
+
+function polygons.implicitPolygonWindingNumber(implicitPolygon, x, y)
+    local sum = 0
+    for _, value in pairs(implicitPolygon) do
+        sum = sum + polygons.implicitLinewIndingNumber(value, x, y) 
+    end
+    return sum
+end
+
+function polygons.dImplicitpolygon(edgeList)
+    local implicitPolygonLines = polygons.implicitPolygon(edgeList)
+
+    for xx = 0, size_screen, 1 do
+        for yy = 0, size_screen, 1 do
+            local P = vec3D.new(xx, yy, 1)                  
+ 
+            local sumImplicitPolygonWindingNumber = polygons.implicitPolygonWindingNumber(implicitPolygonLines, P.x, P.y)            
+            if sumImplicitPolygonWindingNumber ~= 0 then
+                draw_utils.draw_point(P.x, P.y, colors.green)                
+            end
+        end
+    end
+end
+
+return polygons
 
 

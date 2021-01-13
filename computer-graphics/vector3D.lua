@@ -1,7 +1,21 @@
 local vec3 = {}
 
 function vec3.new(x, y, z)
-    return setmetatable({x = x, y = y, z = z}, vec3)
+    local instance = setmetatable({x = x, y = y, z = z}, vec3)    
+
+    function instance.mulScalar(self, k)    
+        self.x = self.x * k
+        self.y = self.y * k
+        self.z = self.z * k
+    end
+
+    function instance.sunScalar(self, k)    
+        self.x = self.x + k
+        self.y = self.y + k
+        self.z = self.z + k
+    end
+
+    return instance
 end
 
 -- Vectors Operations
