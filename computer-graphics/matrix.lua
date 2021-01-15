@@ -1,25 +1,13 @@
+-- Author: Ozéias Souza
+-- Data: 13/01/2021
+-- Hours:  11:51:26
 local matrix = {}
 local vec3D = require "vector3D"
-
--- Matrix 2x2
-
-function matrix.mat2x2_mult(table2x2, vector2D)
-    local a11 = table2x2[0]
-    local a12 = table2x2[1]
-    local a21 = table2x2[2]
-    local a22 = table2x2[3]
-
-    local x = vector2D.x
-    local y = vector2D.y
-
-    return {
-        x = a11 * x + a12 * x,
-        y = a21 * y + a22 * y 
-    }
-end
+local vec2D = require "vector2D"
 
 -- Matrix 3x3
 
+-- print matrix 
 function matrix.tos(M)
     local log = ""
     for i = 0, 2, 1 do
@@ -41,19 +29,40 @@ function matrix.makeMatrix(mat3x3)
     }, matrix)
 end
 
+-- Transformations
 function matrix.makeScaleMatrix(sx, sy)
-    local scale_matrix = {[0]=1/sx, 0, 0, 0, 1/sy, 0, 0, 0, 1}
+    local scale_matrix = {[0]= sx, 0, 0, 0, sy, 0, 0, 0, 1}
     return matrix.makeMatrix(scale_matrix)
 end
 
 function matrix.makeTranslateMatrix(tx, ty)
-    local translate_matrix = {[0]=1, 0, -tx, 0, 1, -ty, 0, 0, 1}
+    local translate_matrix = {[0]= 1, 0, tx, 0, 1, ty, 0, 0, 1}
     return matrix.makeMatrix(translate_matrix)
 end
+
 
 function matrix.makeRotateMatrix(a)
     local c, s = math.cos(-a), math.sin(-a)
     local translate_matrix = {[0]= c, -s, 0, s, c, 0, 0, 0, 1}
+    return matrix.makeMatrix(translate_matrix)
+end
+
+-- Inverse Transformations
+
+function matrix.makeInverseScaleMatrix(sx, sy)
+    assert(sx ~= 0 or sy ~= 0, "Division by zero")
+    local scale_matrix = {[0]= 1/sx, 0, 0, 0, 1/sy, 0, 0, 0, 1}
+    return matrix.makeMatrix(scale_matrix)
+end
+
+function matrix.makeInverseTranslateMatrix(tx, ty)
+    local translate_matrix = {[0]= 1, 0, -tx, 0, 1, -ty, 0, 0, 1}
+    return matrix.makeMatrix(translate_matrix)
+end
+
+function matrix.makeInverseRotateMatrix(a)
+    local c, s = math.cos(-a), math.sin(-a)
+    local translate_matrix = {[0]= c, s, 0, -s, c, 0, 0, 0, 1}
     return matrix.makeMatrix(translate_matrix)
 end
 

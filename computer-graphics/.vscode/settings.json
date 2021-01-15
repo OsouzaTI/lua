@@ -3,5 +3,7 @@
         "love",
         "size_screen",
         "DTangulo",
+        "imageData",
+        "image"
     ]
 }

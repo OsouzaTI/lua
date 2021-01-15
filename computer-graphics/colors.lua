@@ -20,12 +20,7 @@ Module = {
         b = 0,
         a =  255
     },
-    random = {
-        r = math.random(0, 100),
-        g = math.random(0, 150),
-        b = math.random(0, 255),
-        a = 255,        
-    }
+
 }
 
 return Module

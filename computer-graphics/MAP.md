@@ -1,0 +1,33 @@
+## Matrix functions
+
+makeMatrix(mat3x3)
+makeScaleMatrix(sx, sy)
+makeRotateMatrix(a)
+makeTranslateMatrix(tx, ty)
+makeInverseScaleMatrix(sx, sy)
+makeInverseRotateMatrix(a)
+makeInverseTranslateMatrix(tx, ty)
+makeIdentity()
+new()
+mul()
+divideByN(M, n)
+multVec3D(M, u)
+transpose(M)
+inverse(M)
+det(M)
+centerConic(M)
+
+## Polygons functions
+
+sign(v)
+triangle(x, y, x1, y1, x2, y2, x3, y3)
+circle(x, y, cx, cy, radius)
+implicitLine(x1, y1, x2, y2)
+implicitLinewIndingNumber(l, x, y)
+implicitTriangle(x1, y1, x2, y2, x3, y3)
+implicitTriangleWindingNumber(implicitTriangle, x, y)
+implicitPolygon(edgeList)
+implicitPolygonWindingNumber(implicitPolygon, x, y)
+dImplicitLine(x1, y1, x2, y2, x3, y3)
+dImplicitTriangle(x, y, x1, y1, x2, y2, x3, y3)
+dImplicitpolygon(x, y, edgeList)
